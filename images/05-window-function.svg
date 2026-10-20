@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 520" width="940" height="520" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .hdr5 { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .cap5 { font-size: 11px; fill: #64748b; }
+      .cell { font-size: 11px; fill: #334155; }
+      .dept { font-size: 11px; font-weight: 700; fill: #1d4ed8; }
+      .box-l { fill: #eff6ff; stroke: #bfdbfe; rx: 5; }
+      .box-r { fill: #fefce8; stroke: #fde68a; rx: 5; }
+      .agg { fill: #dcfce7; stroke: #86efac; rx: 5; }
+      .lbl { font-size: 12px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="940" height="520" fill="#ffffff"/>
+  <text x="30" y="32" class="hdr5">窗口函数：聚合不折叠行</text>
+  <text x="30" y="52" class="cap5">GROUP BY 把 10 行压成 3 行；窗口函数保留 10 行，只是在旁边"附加"一个计算结果 —— 这是两者唯一的区别，也是全部的威力</text>
+
+  <!-- 左：GROUP BY -->
+  <g>
+    <text x="60" y="96" class="lbl" fill="#334155">GROUP BY dept</text>
+    <!-- 原始行 -->
+    <g>
+      <rect class="box-l" x="40" y="110" width="180" height="26" rx="5"/>
+      <text x="52" y="127" class="cell">销售部 · 张三 · 300</text>
+      <rect class="box-l" x="40" y="140" width="180" height="26" rx="5"/>
+      <text x="52" y="157" class="cell">销售部 · 李四 · 500</text>
+      <rect class="box-l" x="40" y="170" width="180" height="26" rx="5"/>
+      <text x="52" y="187" class="cell">技术部 · 王五 · 400</text>
+      <rect class="box-l" x="40" y="200" width="180" height="26" rx="5"/>
+      <text x="52" y="217" class="cell">技术部 · 赵六 · 600</text>
+      <rect class="box-l" x="40" y="230" width="180" height="26" rx="5"/>
+      <text x="52" y="247" class="cell">技术部 · 孙七 · 350</text>
+    </g>
+    <path d="M 245 185 L 285 185" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar5)"/>
+    <!-- 结果 -->
+    <g>
+      <rect class="agg" x="290" y="132" width="150" height="26" rx="5"/>
+      <text x="302" y="149" class="cell">销售部 · 800</text>
+      <rect class="agg" x="290" y="182" width="150" height="26" rx="5"/>
+      <text x="302" y="199" class="cell">技术部 · 1350</text>
+    </g>
+    <text x="290" y="240" class="cap5" fill="#b91c1c">5 行 → 2 行：人名没了</text>
+    <text x="290" y="258" class="cap5">想同时看"每个人 + 部门合计"？做不到</text>
+  </g>
+
+  <!-- 右：窗口函数 -->
+  <g>
+    <text x="530" y="96" class="lbl" fill="#334155">SUM(salary) OVER (PARTITION BY dept)</text>
+    <g>
+      <rect class="box-r" x="500" y="110" width="180" height="26" rx="5"/>
+      <text x="512" y="127" class="cell">销售部 · 张三 · 300</text>
+      <rect class="box-r" x="500" y="140" width="180" height="26" rx="5"/>
+      <text x="512" y="157" class="cell">销售部 · 李四 · 500</text>
+      <rect class="box-r" x="500" y="170" width="180" height="26" rx="5"/>
+      <text x="512" y="187" class="cell">技术部 · 王五 · 400</text>
+      <rect class="box-r" x="500" y="200" width="180" height="26" rx="5"/>
+      <text x="512" y="217" class="cell">技术部 · 赵六 · 600</text>
+      <rect class="box-r" x="500" y="230" width="180" height="26" rx="5"/>
+      <text x="512" y="247" class="cell">技术部 · 孙七 · 350</text>
+    </g>
+    <path d="M 705 185 L 745 185" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar5)"/>
+    <g>
+      <rect class="agg" x="750" y="110" width="110" height="26" rx="5"/>
+      <text x="766" y="127" class="cell">→ 800</text>
+      <rect class="agg" x="750" y="140" width="110" height="26" rx="5"/>
+      <text x="766" y="157" class="cell">→ 800</text>
+      <rect class="agg" x="750" y="170" width="110" height="26" rx="5"/>
+      <text x="766" y="187" class="cell">→ 1350</text>
+      <rect class="agg" x="750" y="200" width="110" height="26" rx="5"/>
+      <text x="766" y="217" class="cell">→ 1350</text>
+      <rect class="agg" x="750" y="230" width="110" height="26" rx="5"/>
+      <text x="766" y="247" class="cell">→ 1350</text>
+    </g>
+    <text x="500" y="282" class="cap5" fill="#15803d">5 行还是 5 行：每个人的工资旁边都多了一列"所在部门的总额"</text>
+    <text x="500" y="300" class="cap5">一行工资 / 部门总额 = 这个人的占比 —— 一个查询搞定</text>
+  </g>
+
+  <!-- 分区示意 -->
+  <line x1="30" y1="330" x2="910" y2="330" stroke="#e2e8f0"/>
+  <text x="30" y="356" class="cap5" style="font-weight:700">OVER (...) 括号里能放三样东西，自由组合出全部窗口语法：</text>
+
+  <g transform="translate(30,376)">
+    <rect x="0" y="0" width="280" height="110" rx="9" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="14" y="26" class="lbl" fill="#1e40af">PARTITION BY　分组</text>
+    <text x="14" y="48" class="cap5">把行切成互不重叠的"窗口"</text>
+    <text x="14" y="66" class="cap5">每个分区独立计算</text>
+    <text x="14" y="94" class="code" fill="#1e40af">PARTITION BY dept</text>
+  </g>
+  <g transform="translate(330,376)">
+    <rect x="0" y="0" width="280" height="110" rx="9" fill="#fefce8" stroke="#fde68a"/>
+    <text x="14" y="26" class="lbl" fill="#a16207">ORDER BY　排序</text>
+    <text x="14" y="48" class="cap5">决定计算的顺序</text>
+    <text x="14" y="66" class="cap5">SUM 变累计，LAG 取前一行</text>
+    <text x="14" y="94" class="code" fill="#a16207">ORDER BY date DESC</text>
+  </g>
+  <g transform="translate(630,376)">
+    <rect x="0" y="0" width="280" height="110" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="14" y="26" class="lbl" fill="#15803d">ROWS BETWEEN　取哪几行</text>
+    <text x="14" y="48" class="cap5">滑动窗口：近 3 日移动平均</text>
+    <text x="14" y="66" class="cap5">不带它 = 分区首行到当前行</text>
+    <text x="14" y="94" class="code" fill="#15803d">ROWS 2 PRECEDING ...</text>
+  </g>
+</svg>
