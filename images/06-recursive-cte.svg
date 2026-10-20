@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 540" width="940" height="540" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .h6 { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .c6 { font-size: 11px; fill: #475569; }
+      .cap6 { font-size: 11px; fill: #64748b; }
+      .row { font-size: 11px; font-family: 'SF Mono', Menlo, monospace; fill: #0f172a; }
+      .seedbox { fill: #eff6ff; stroke: #3b82f6; stroke-width: 1.6; rx: 7; }
+      .iterbox { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; rx: 7; }
+      .queue { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.4; rx: 7; }
+    </style>
+  </defs>
+
+  <rect width="940" height="540" fill="#ffffff"/>
+  <text x="30" y="32" class="h6">递归 CTE 的执行过程：一个不断出队、入队的工作队列</text>
+  <text x="30" y="52" class="cap6">以"从品类表里查出『电子产品』整棵子树"为例。记住心智模型：CTE 不是函数调用，是一张边跑边写的临时表</text>
+
+  <!-- SQL -->
+  <g>
+    <rect x="30" y="70" width="880" height="98" rx="8" fill="#0f172a"/>
+    <text x="46" y="94" class="row" fill="#93c5fd">WITH RECURSIVE sub(id) AS (</text>
+    <text x="60" y="112" class="row" fill="#e2e8f0">SELECT category_id FROM categories WHERE name = '电子产品'   -- ① 种子：只跑一次</text>
+    <text x="60" y="130" class="row" fill="#e2e8f0">UNION ALL</text>
+    <text x="60" y="148" class="row" fill="#fca5a5">SELECT c.category_id FROM categories c JOIN sub s ON c.parent_id = s.id   -- ② 递归：反复跑</text>
+    <text x="46" y="164" class="row" fill="#93c5fd">)</text>
+  </g>
+
+  <!-- 队列演化 -->
+  <g transform="translate(30,196)">
+    <rect class="seedbox" x="0" y="0" width="255" height="112"/>
+    <text x="14" y="24" style="font-size:12px;font-weight:700;fill:#1d4ed8">种子行（UNION 之前）</text>
+    <text x="14" y="48" class="row">队: [电子产品(1)]</text>
+    <text x="14" y="68" class="c6">结果表: {1}</text>
+    <text x="14" y="94" class="c6" fill="#1d4ed8">只执行一次</text>
+  </g>
+
+  <g transform="translate(330,196)">
+    <rect class="iterbox" x="0" y="0" width="255" height="112"/>
+    <text x="14" y="24" style="font-size:12px;font-weight:700;fill:#0f172a">第 1 轮递归</text>
+    <text x="14" y="48" class="row">出队 1 → 查它的孩子</text>
+    <text x="14" y="66" class="row">队: [手机(11), 电脑(12),</text>
+    <text x="14" y="82" class="row">　  音频(13), 配件(14)]</text>
+    <text x="14" y="102" class="c6">结果表: {1, 11, 12, 13, 14}</text>
+  </g>
+
+  <g transform="translate(630,196)">
+    <rect class="iterbox" x="0" y="0" width="255" height="112"/>
+    <text x="14" y="24" style="font-size:12px;font-weight:700;fill:#0f172a">第 2 轮递归</text>
+    <text x="14" y="48" class="row">出队 11/12/13/14</text>
+    <text x="14" y="66" class="row">它们没有孩子 → 队列空</text>
+    <text x="14" y="86" class="c6" fill="#16a34a" style="font-weight:700">队列为空 → 递归终止</text>
+    <text x="14" y="104" class="c6">结果表: 5 行（1 + 4 个子类）</text>
+  </g>
+
+  <path d="M 285 252 L 330 252" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar6)"/>
+  <path d="M 585 252 L 630 252" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar6)"/>
+
+  <!-- 三个关键提醒 -->
+  <line x1="30" y1="336" x2="910" y2="336" stroke="#e2e8f0"/>
+  <text x="30" y="362" class="cap6" style="font-weight:700">三个必须知道的坑：</text>
+  <g transform="translate(30,378)">
+    <rect x="0" y="0" width="283" height="130" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="14" y="26" style="font-size:12px;font-weight:700;fill:#b91c1c">① 死循环</text>
+    <text x="14" y="48" class="c6">数据成环（A 的孩子是 B，</text>
+    <text x="14" y="66" class="c6">B 的孩子又是 A）就永不终止。</text>
+    <text x="14" y="88" class="c6">防御：路径里带上已访问 id，</text>
+    <text x="14" y="106" class="c6">或 SQLite 的 UNION（去重）自动停。</text>
+  </g>
+  <g transform="translate(328,378)">
+    <rect x="0" y="0" width="283" height="130" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="14" y="26" style="font-size:12px;font-weight:700;fill:#b91c1c">② UNION vs UNION ALL</text>
+    <text x="14" y="48" class="c6">UNION 每轮去重，能打断循环，</text>
+    <text x="14" y="66" class="c6">但去重有开销；</text>
+    <text x="14" y="88" class="c6">确定无环的树用 UNION ALL 更快。</text>
+    <text x="14" y="110" class="c6">第 7 章有两者耗时对比。</text>
+  </g>
+  <g transform="translate(626,378)">
+    <rect x="0" y="0" width="283" height="130" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="14" y="26" style="font-size:12px;font-weight:700;fill:#b91c1c">③ 不能在递归分支里聚合</text>
+    <text x="14" y="48" class="c6">SQLite 规定：递归 SELECT 里</text>
+    <text x="14" y="66" class="c6">不许出现 SUM/COUNT/GROUP BY。</text>
+    <text x="14" y="88" class="c6">正确姿势：递归只负责"展开"，</text>
+    <text x="14" y="106" class="c6">外层再包一层做聚合。</text>
+  </g>
+</svg>
