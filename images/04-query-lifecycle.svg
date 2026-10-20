@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 480" width="940" height="480" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .stage { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 9; }
+      .st { font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .sd { font-size: 10.5px; fill: #475569; }
+      .code { font-size: 11px; fill: #1e40af; font-family: 'SF Mono', Menlo, monospace; }
+      .flow { stroke: #64748b; stroke-width: 1.6; fill: none; }
+      .hd { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .cap3 { font-size: 11px; fill: #64748b; }
+    </style>
+  </defs>
+
+  <rect width="940" height="480" fill="#ffffff"/>
+  <text x="30" y="32" class="hd">一条 SQL 从提交到出结果的完整旅程</text>
+  <text x="30" y="52" class="cap3">知道每一步在干什么，出了慢查询才知道该怪谁：解析慢改 SQL，优化慢看统计信息，执行慢看索引</text>
+
+  <!-- 1. SQL 输入 -->
+  <g>
+    <rect class="stage" x="30" y="84" width="190" height="120" rx="9"/>
+    <text x="44" y="108" class="st">① 你写下 SQL</text>
+    <text x="44" y="132" class="code">SELECT c.name, SUM(...)</text>
+    <text x="44" y="148" class="code">FROM orders o JOIN ...</text>
+    <text x="44" y="164" class="code">WHERE o.status = 'paid'</text>
+    <text x="44" y="188" class="sd">文本，对数据库来说只是字符串</text>
+  </g>
+
+  <!-- 2. Parser -->
+  <g>
+    <rect class="stage" x="280" y="84" width="170" height="120" rx="9"/>
+    <text x="294" y="108" class="st">② 解析器 Parser</text>
+    <text x="294" y="130" class="sd">· 词法分析：切成 token</text>
+    <text x="294" y="146" class="sd">· 语法分析：建成语法树</text>
+    <text x="294" y="162" class="sd">· 语义检查：表/列存在吗</text>
+    <text x="294" y="188" class="sd">你写错列名在这一步报错</text>
+  </g>
+
+  <!-- 3. Planner -->
+  <g>
+    <rect class="stage" x="510" y="84" width="180" height="120" rx="9" stroke="#f59e0b" stroke-width="2"/>
+    <text x="524" y="108" class="st" fill="#b45309">③ 优化器 Planner ★</text>
+    <text x="524" y="130" class="sd">枚举候选计划：</text>
+    <text x="524" y="146" class="sd">先扫哪张表？用哪个索引？</text>
+    <text x="524" y="162" class="sd">JOIN 顺序怎么排？</text>
+    <text x="524" y="188" class="sd" fill="#b45309">依据：表统计信息（行数/分布）</text>
+  </g>
+
+  <!-- 4. Executor -->
+  <g>
+    <rect class="stage" x="750" y="84" width="160" height="120" rx="9"/>
+    <text x="764" y="108" class="st">④ 执行器 Executor</text>
+    <text x="764" y="130" class="sd">按计划逐算子执行：</text>
+    <text x="764" y="146" class="sd">Scan → Join → Group</text>
+    <text x="764" y="162" class="sd">→ Sort → Limit</text>
+    <text x="764" y="188" class="sd">真正读磁盘/内存的地方</text>
+  </g>
+
+  <path class="flow" d="M 220 144 L 280 144" marker-end="url(#ar3)"/>
+  <path class="flow" d="M 450 144 L 510 144" marker-end="url(#ar3)"/>
+  <path class="flow" d="M 690 144 L 750 144" marker-end="url(#ar3)"/>
+
+  <!-- 下方：EXPLAIN 视角 -->
+  <g>
+    <rect x="30" y="250" width="880" height="88" rx="9" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="46" y="276" class="st">EXPLAIN QUERY PLAN 是透视第③步的窗口（SQLite 语法）</text>
+    <text x="46" y="300" class="code">EXPLAIN QUERY PLAN SELECT * FROM orders WHERE customer_id = 42;</text>
+    <text x="46" y="322" class="code">→ SCAN orders　（全表扫，坏兆头）　vs　→ SEARCH orders USING INDEX idx_x　（走索引，好兆头）</text>
+  </g>
+
+  <!-- 底部：三条实战规律 -->
+  <line x1="30" y1="368" x2="910" y2="368" stroke="#e2e8f0"/>
+  <text x="30" y="394" class="cap3" style="font-weight:700">由这条流水线推出的三条实战规律：</text>
+  <text x="30" y="418" class="sd">· 对列套函数（WHERE UPPER(name)=...）会让优化器不敢用索引 —— 它不知道函数会怎么改变值的分布（第 9 章实测）</text>
+  <text x="30" y="438" class="sd">· 统计信息过期会让优化器选错计划 —— 所以大批量导入数据后要跑 ANALYZE（第 9 章的"半套索引"实验就发生在这一步）</text>
+  <text x="30" y="458" class="sd">· SQL 是声明式语言：你说"要什么"，优化器决定"怎么拿"—— 同样的数据换种写法，性能差 100 倍是常态</text>
+</svg>
