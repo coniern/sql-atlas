@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" width="940" height="620" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .h7 { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .c7 { font-size: 11px; fill: #475569; }
+      .code { font-size: 11.5px; font-family: 'SF Mono', Menlo, monospace; }
+      .code-w { font-size: 11.5px; font-family: 'SF Mono', Menlo, monospace; fill: #0f172a; }
+      .stage7 { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 9; }
+      .tag { font-size: 11px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="940" height="620" fill="#ffffff"/>
+  <text x="30" y="32" class="h7">SQL 注入为什么能成立：数据变成了代码</text>
+  <text x="30" y="52" class="c7">根因只有一个：把用户输入当 SQL 的一部分拼进语句。参数化查询让输入永远是"值"，这一条就能挡住 99% 的注入</text>
+
+  <!-- 流程三步 -->
+  <g>
+    <rect class="stage7" x="30" y="76" width="280" height="150" rx="9"/>
+    <text x="44" y="100" class="tag" fill="#334155">① 用户在登录框输入</text>
+    <text x="44" y="126" class="code" fill="#334155">用户名: admin'--</text>
+    <text x="44" y="142" class="code" fill="#334155">密码: 随便什么</text>
+    <text x="44" y="168" class="c7">撇号提前闭合了字符串，</text>
+    <text x="44" y="184" class="c7">两个减号把后面的密码检查注释掉</text>
+  </g>
+  <g>
+    <rect class="stage7" x="355" y="76" width="280" height="150" rx="9" stroke="#dc2626" stroke-width="2"/>
+    <text x="369" y="100" class="tag" fill="#b91c1c">② 后端拼接 SQL（错误做法）</text>
+    <text x="369" y="124" class="code" fill="#b91c1c">sql = "SELECT * FROM users</text>
+    <text x="383" y="140" class="code" fill="#b91c1c">WHERE username='" + u + "'</text>
+    <text x="383" y="156" class="code" fill="#b91c1c">AND password='" + p + "'"</text>
+    <text x="369" y="180" class="c7">拼接后，用户的"输入"已经是</text>
+    <text x="369" y="196" class="c7">SQL 语法的一部分 —— 数据成了代码</text>
+  </g>
+  <g>
+    <rect class="stage7" x="680" y="76" width="230" height="150" rx="9" stroke="#dc2626" stroke-width="2"/>
+    <text x="694" y="100" class="tag" fill="#b91c1c">③ 数据库实际执行</text>
+    <text x="694" y="124" class="code-w">SELECT * FROM users</text>
+    <text x="694" y="140" class="code-w">WHERE username='admin'</text>
+    <text x="694" y="156" class="code-w">--' AND password='...'</text>
+    <text x="694" y="180" class="c7" fill="#b91c1c" style="font-weight:700">密码条件被注释掉</text>
+    <text x="694" y="198" class="c7" fill="#b91c1c">免密登录 admin 账户</text>
+  </g>
+  <path d="M 310 151 L 355 151" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar7)"/>
+  <path d="M 635 151 L 680 151" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar7)"/>
+
+  <!-- 正确做法 -->
+  <g>
+    <rect x="30" y="252" width="880" height="84" rx="9" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="46" y="278" class="tag" fill="#15803d">✔ 参数化查询：结构和数据彻底分离（三种写法等价，任选其一）</text>
+    <text x="46" y="302" class="code" fill="#15803d">cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (u, p))  # SQLite</text>
+    <text x="46" y="322" class="code" fill="#15803d">cursor.execute("... WHERE username=%s AND password=%s", (u, p))                # MySQL/PG</text>
+  </g>
+
+  <!-- 注入类型谱系 -->
+  <line x1="30" y1="360" x2="910" y2="360" stroke="#e2e8f0"/>
+  <text x="30" y="386" class="h7" style="font-size:13px">注入手法的完整谱系（sqlmap 用 -t 参数区分的技术，本质就是这六类的排列组合）</text>
+
+  <g transform="translate(30,402)">
+    <rect x="0" y="0" width="283" height="92" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="14" y="24" class="tag" fill="#1d4ed8">Boolean 盲注</text>
+    <text x="14" y="44" class="c7">页面只回"对/错"两种状态</text>
+    <text x="14" y="62" class="c7">攻击者逐位猜：' AND SUBSTR(pw,1,1)='a</text>
+    <text x="14" y="82" class="c7">慢，但不需要任何回显</text>
+  </g>
+  <g transform="translate(328,402)">
+    <rect x="0" y="0" width="283" height="92" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="14" y="24" class="tag" fill="#1d4ed8">Time 盲注</text>
+    <text x="14" y="44" class="c7">连对错都不回显，看响应时间</text>
+    <text x="14" y="62" class="c7">' AND SLEEP(5)--</text>
+    <text x="14" y="82" class="c7">更慢，但几乎无处可防（只能限流）</text>
+  </g>
+  <g transform="translate(626,402)">
+    <rect x="0" y="0" width="283" height="92" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="14" y="24" class="tag" fill="#1d4ed8">Error / Union / Stacked</text>
+    <text x="14" y="44" class="c7">报错回显 → 直接读数据</text>
+    <text x="14" y="62" class="c7">UNION SELECT → 拼接第二张表</text>
+    <text x="14" y="82" class="c7">分号堆叠 → 直接执行任意语句（最凶）</text>
+  </g>
+
+  <!-- 底部 -->
+  <g transform="translate(30,512)">
+    <rect x="0" y="0" width="880" height="84" rx="9" fill="#fefce8" stroke="#fde68a"/>
+    <text x="16" y="26" class="tag" fill="#a16207">为什么 sqlmap 有 84 个 tamper 脚本？—— 因为防御方每封一条路，攻击方就换一种"长得不像恶意输入"的写法</text>
+    <text x="16" y="48" class="c7" fill="#a16207">space2comment（空格变注释）· randomcase（大小写随机）· charencode（URL 编码）· between（替换比较符）· versionedkeywords（加版本注释）……</text>
+    <text x="16" y="70" class="c7" fill="#a16207">正面结论：不要试图"过滤掉恶意输入"，这条路走不通 —— 用参数化 + 最小权限 + 只读账号，让恶意输入"无害"才是终点</text>
+  </g>
+</svg>
