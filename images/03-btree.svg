@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 560" width="940" height="560" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .node { fill: #eff6ff; stroke: #3b82f6; stroke-width: 1.6; rx: 6; }
+      .leaf { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.6; rx: 6; }
+      .kt { font-size: 12px; fill: #0f172a; font-family: 'SF Mono', Menlo, monospace; }
+      .cap2 { font-size: 11px; fill: #64748b; }
+      .hd { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .sep { stroke: #93c5fd; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect width="940" height="560" fill="#ffffff"/>
+  <text x="30" y="32" class="hd">B+ 树：为什么索引让查询变快，又让写入变慢</text>
+  <text x="30" y="54" class="cap2">3000 行的 orders 表，找 customer_id = 42：全表扫描要读 3000 行；走这棵树只要 2 次节点定位</text>
+
+  <!-- 根节点 -->
+  <g>
+    <rect class="node" x="390" y="86" width="160" height="46" rx="6"/>
+    <line class="sep" x1="470" y1="86" x2="470" y2="132"/>
+    <text x="415" y="115" class="kt">17</text>
+    <text x="492" y="115" class="kt">35</text>
+    <text x="30" y="115" class="cap2" style="font-weight:700">根节点</text>
+    <text x="570" y="106" class="cap2">≤17 走左边</text>
+    <text x="570" y="122" class="cap2">17~35 走中间</text>
+    <text x="570" y="138" class="cap2">&gt;35 走右边</text>
+  </g>
+
+  <!-- 内部节点 -->
+  <g>
+    <rect class="node" x="180" y="210" width="150" height="46" rx="6"/>
+    <line class="sep" x1="255" y1="210" x2="255" y2="256"/>
+    <text x="200" y="239" class="kt">8</text>
+    <text x="272" y="239" class="kt">17</text>
+    <rect class="node" x="395" y="210" width="150" height="46" rx="6"/>
+    <line class="sep" x1="470" y1="210" x2="470" y2="256"/>
+    <text x="415" y="239" class="kt">21</text>
+    <text x="487" y="239" class="kt">28</text>
+    <rect class="node" x="610" y="210" width="150" height="46" rx="6"/>
+    <line class="sep" x1="685" y1="210" x2="685" y2="256"/>
+    <text x="630" y="239" class="kt">31</text>
+    <text x="702" y="239" class="kt">40</text>
+    <text x="30" y="239" class="cap2" style="font-weight:700">内部节点</text>
+    <text x="30" y="257" class="cap2">只存键，不存数据</text>
+  </g>
+
+  <!-- 根到内部 -->
+  <path d="M 430 132 L 275 210" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 470 132 L 470 210" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 510 132 L 665 210" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+
+  <!-- 叶子节点 -->
+  <g>
+    <rect class="leaf" x="60" y="360" width="180" height="50" rx="6"/>
+    <text x="76" y="382" class="kt">3 5 8</text>
+    <text x="76" y="400" class="cap2">+ 完整行数据</text>
+    <rect class="leaf" x="268" y="360" width="180" height="50" rx="6"/>
+    <text x="284" y="382" class="kt">10 15 17</text>
+    <text x="284" y="400" class="cap2">+ 完整行数据</text>
+    <rect class="leaf" x="476" y="360" width="180" height="50" rx="6"/>
+    <text x="492" y="382" class="kt">21 25 28</text>
+    <text x="492" y="400" class="cap2">+ 完整行数据</text>
+    <rect class="leaf" x="684" y="360" width="180" height="50" rx="6"/>
+    <text x="700" y="382" class="kt">31 35 40</text>
+    <text x="700" y="400" class="cap2">+ 完整行数据</text>
+  </g>
+
+  <!-- 内部到叶子 -->
+  <path d="M 230 256 L 150 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 268 256 L 340 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 445 256 L 380 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 490 256 L 540 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 660 256 L 600 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 710 256 L 780 360" stroke="#64748b" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+
+  <!-- 叶子链表 -->
+  <path d="M 240 385 L 268 385" stroke="#16a34a" stroke-width="1.6" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 448 385 L 476 385" stroke="#16a34a" stroke-width="1.6" fill="none" marker-end="url(#ar2)"/>
+  <path d="M 656 385 L 684 385" stroke="#16a34a" stroke-width="1.6" fill="none" marker-end="url(#ar2)"/>
+  <text x="880" y="390" class="cap2" style="font-weight:700">叶子层</text>
+  <text x="880" y="406" class="cap2">双向链表</text>
+
+  <!-- 范围查询箭头 -->
+  <path d="M 60 330 C 200 310 700 310 864 330" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar2)"/>
+  <text x="330" y="316" class="cap2" fill="#b45309" style="font-weight:700">范围查询 WHERE id BETWEEN 5 AND 35：定位到起点后沿链表扫，不用回到树上</text>
+
+  <!-- 底部要点 -->
+  <line x1="30" y1="446" x2="910" y2="446" stroke="#e2e8f0"/>
+  <text x="30" y="472" class="cap2" style="font-weight:700">三个直接推论（每个都能在第 9 章实测验证）：</text>
+  <text x="30" y="496" class="cap2">① 树高 = 磁盘 IO 次数。千万行的表，B+ 树通常也只有 3~4 层 —— 这就是索引快的根本原因</text>
+  <text x="30" y="516" class="cap2">② INSERT/UPDATE 要同时维护树 + 所有二级索引 → 每多一个索引，写入就慢一截（实测：10000 行插入慢约 10%）</text>
+  <text x="30" y="536" class="cap2">③ 最左前缀：复合索引 (a,b,c) 是先按 a 排、a 相同再按 b 排 —— 所以只查 b 用不上这棵树的排序</text>
+</svg>
