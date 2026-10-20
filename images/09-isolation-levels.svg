@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" width="940" height="620" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .h9 { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .c9 { font-size: 11px; fill: #475569; }
+      .lvl { font-size: 12px; font-weight: 700; fill: #0f172a; }
+      .mono { font-size: 10.5px; font-family: 'SF Mono', Menlo, monospace; }
+      .ok { fill: #16a34a; font-weight: 700; }
+      .bad { fill: #dc2626; font-weight: 700; }
+      .warn { fill: #d97706; font-weight: 700; }
+      .gridh { font-size: 11.5px; font-weight: 700; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect width="940" height="620" fill="#ffffff"/>
+  <text x="30" y="32" class="h9">四个隔离级别 × 三种并发异常：一图看懂"为什么需要事务"</text>
+  <text x="30" y="52" class="c9">隔离级别越低性能越好、数据越乱。选型的本质是：你的业务能容忍哪种异常</text>
+
+  <!-- 三种异常的演示 -->
+  <g transform="translate(30,76)">
+    <rect x="0" y="0" width="880" height="150" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="16" y="26" class="gridh" fill="#b91c1c">三种异常是什么（两个会话同时操作同一账户，初始余额 100）</text>
+    <text x="16" y="52" class="c9" fill="#b91c1c" style="font-weight:700">脏读</text>
+    <text x="80" y="52" class="c9">会话 A 改成 200 还没提交，会话 B 读到了 200 —— 然后 A 回滚了。B 拿着一个从未存在过的数去做了决策</text>
+    <text x="16" y="82" class="c9" fill="#b91c1c" style="font-weight:700">不可重复读</text>
+    <text x="110" y="82" class="c9">A 先读余额 100，期间 B 把钱改成 200 并提交，A 再读变成 200 —— 同一事务里同一行读出两个值（针对 UPDATE）</text>
+    <text x="16" y="112" class="c9" fill="#b91c1c" style="font-weight:700">幻读</text>
+    <text x="80" y="112" class="c9">A 统计"余额&gt;50 的账户"得 3 个，B 插入一个新账户并提交，A 再统计变 4 个 —— 凭空多出"幽灵"行（针对 INSERT）</text>
+    <text x="16" y="138" class="c9" fill="#64748b">记忆：脏读读的是"没生效的数据"；不可重复读是"同一行变了"；幻读是"同一批行多了/少了"</text>
+  </g>
+
+  <!-- 矩阵 -->
+  <g transform="translate(30,258)">
+    <rect x="170" y="0" width="170" height="36" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="200" y="23" class="gridh">脏读</text>
+    <rect x="340" y="0" width="190" height="36" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="370" y="23" class="gridh">不可重复读</text>
+    <rect x="530" y="0" width="160" height="36" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="560" y="23" class="gridh">幻读</text>
+    <rect x="690" y="0" width="190" height="36" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="704" y="16" class="gridh">典型实现</text>
+    <text x="704" y="30" class="c9">（代价）</text>
+
+    <g transform="translate(0,36)">
+      <text x="10" y="28" class="lvl">READ UNCOMMITTED</text>
+      <text x="14" y="46" class="c9">读未提交</text>
+      <rect x="170" y="0" width="170" height="56" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+      <text x="240" y="33" class="bad" text-anchor="middle">会发生 ✗</text>
+      <rect x="340" y="0" width="190" height="56" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+      <text x="420" y="33" class="bad" text-anchor="middle">会发生 ✗</text>
+      <rect x="530" y="0" width="160" height="56" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+      <text x="595" y="33" class="bad" text-anchor="middle">会发生 ✗</text>
+      <text x="690" y="24" class="c9">几乎没有数据库默认用它</text>
+      <text x="690" y="42" class="c9">（最快，但等于裸奔）</text>
+    </g>
+
+    <g transform="translate(0,92)">
+      <text x="10" y="28" class="lvl">READ COMMITTED</text>
+      <text x="14" y="46" class="c9">读已提交</text>
+      <rect x="170" y="0" width="170" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="240" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <rect x="340" y="0" width="190" height="56" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+      <text x="420" y="33" class="bad" text-anchor="middle">会发生 ✗</text>
+      <rect x="530" y="0" width="160" height="56" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+      <text x="595" y="33" class="bad" text-anchor="middle">会发生 ✗</text>
+      <text x="690" y="24" class="c9">Oracle / PG / SQL Server 默认</text>
+      <text x="690" y="42" class="c9">（每条语句一个快照）</text>
+    </g>
+
+    <g transform="translate(0,148)">
+      <text x="10" y="28" class="lvl">REPEATABLE READ</text>
+      <text x="14" y="46" class="c9">可重复读</text>
+      <rect x="170" y="0" width="170" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="240" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <rect x="340" y="0" width="190" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="420" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <rect x="530" y="0" width="160" height="56" rx="6" fill="#fef9c3" stroke="#fde047"/>
+      <text x="595" y="33" class="warn" text-anchor="middle">标准说会 · MySQL 不会*</text>
+      <text x="690" y="24" class="c9">MySQL InnoDB 默认（MVCC + 间隙锁）</text>
+      <text x="690" y="42" class="c9">（* InnoDB 实际上把幻读也防了）</text>
+    </g>
+
+    <g transform="translate(0,204)">
+      <text x="10" y="28" class="lvl">SERIALIZABLE</text>
+      <text x="14" y="46" class="c9">串行化</text>
+      <rect x="170" y="0" width="170" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="240" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <rect x="340" y="0" width="190" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="420" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <rect x="530" y="0" width="160" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="595" y="33" class="ok" text-anchor="middle">不会 ✓</text>
+      <text x="690" y="24" class="c9">最严格也最慢：并发事务近似排队</text>
+      <text x="690" y="42" class="c9">（只用于对账/结算类场景）</text>
+    </g>
+  </g>
+
+  <!-- SQLite 特例 -->
+  <line x1="30" y1="528" x2="910" y2="528" stroke="#e2e8f0"/>
+  <text x="30" y="556" class="c9" style="font-weight:700">SQLite 的特殊情况：它只有一种模式 —— "串行化"（库级写锁，同一时刻只允许一个写者），</text>
+  <text x="30" y="576" class="c9">所以第 8 章的实操里你不会遇到脏读；代价是高并发写入直接 SQLITE_BUSY。这也是它适合嵌入式、不适合高并发 Web 后端的原因</text>
+</svg>
