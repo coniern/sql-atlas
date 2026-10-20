@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 540" width="940" height="540" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif">
+  <defs>
+    <marker id="ar8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .h8 { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .c8 { font-size: 11px; fill: #475569; }
+      .layer { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; rx: 9; }
+      .lname { font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .ldesc { font-size: 10.5px; fill: #475569; }
+      .lcode { font-size: 10.5px; font-family: 'SF Mono', Menlo, monospace; fill: #1e40af; }
+    </style>
+  </defs>
+
+  <rect width="940" height="540" fill="#ffffff"/>
+  <text x="30" y="32" class="h8">SQLAlchemy 的分层：ORM 不是"替代 SQL"，是"帮你管理 SQL 的生成"</text>
+  <text x="30" y="52" class="c8">你写的每行 Python 最终都会变成 SQL 发给数据库。看懂这张图，就明白 N+1 问题出在哪一层、该在哪一层修</text>
+
+  <g transform="translate(30,76)">
+    <rect class="layer" x="0" y="0" width="620" height="78" rx="9" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+    <text x="16" y="26" class="lname" fill="#1d4ed8">ORM 层（你日常写的地方）</text>
+    <text x="16" y="46" class="lcode">session.query(Order).options(joinedload(Order.items)).filter_by(status="paid")</text>
+    <text x="16" y="66" class="ldesc">对象 + 关系的心智模型。何时发 SQL、发几条，由"加载策略"决定 —— N+1 就藏在这</text>
+  </g>
+
+  <g transform="translate(30,170)">
+    <rect class="layer" x="0" y="0" width="620" height="78" rx="9" fill="#fefce8" stroke="#ca8a04" stroke-width="1.6"/>
+    <text x="16" y="26" class="lname" fill="#a16207">Session · 工作单元（Unit of Work）</text>
+    <text x="16" y="46" class="ldesc">身份地图（同一主键 = 同一对象）· 脏检查（只 UPDATE 变过的字段）· 事务边界（commit/rollback）</text>
+    <text x="16" y="66" class="ldesc">N+1 问题的直接根源：访问一个"懒加载"关系属性时，Session 当场补发一条 SQL</text>
+  </g>
+
+  <g transform="translate(30,264)">
+    <rect class="layer" x="0" y="0" width="620" height="78" rx="9"/>
+    <text x="16" y="26" class="lname">Core 层 · 表达式语言 / SQL 生成器</text>
+    <text x="16" y="46" class="lcode">select(func.sum(OrderItem.quantity * OrderItem.unit_price)).where(...)</text>
+    <text x="16" y="66" class="ldesc">用 Python 表达式构造 SQL AST —— 自动转义（注入免疫的第一道墙）、跨数据库方言</text>
+  </g>
+
+  <g transform="translate(30,358)">
+    <rect class="layer" x="0" y="0" width="620" height="78" rx="9"/>
+    <text x="16" y="26" class="lname">Engine + Pool + Dialect</text>
+    <text x="16" y="46" class="ldesc">连接池管理物理连接 · Dialect 翻译各数据库差异（SQLite 的 ? 占位符 → PG 的 %s）</text>
+    <text x="16" y="66" class="ldesc">这就是为什么换数据库时 Python 代码几乎不用改 —— 方言差异被隔离在这一层</text>
+  </g>
+
+  <g transform="translate(30,452)">
+    <rect class="layer" x="0" y="0" width="620" height="62" rx="9" fill="#f8fafc"/>
+    <text x="16" y="24" class="lname" fill="#475569">DBAPI (PEP 249) → 数据库驱动 → 数据库</text>
+    <text x="16" y="44" class="ldesc">SQLAlchemy 之下还有一层标准接口。真正发到服务器的 SQL 永远是字符串 —— 所以"懂 SQL"依然是硬技能</text>
+  </g>
+
+  <path d="M 340 154 L 340 170" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#ar8)"/>
+  <path d="M 340 248 L 340 264" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#ar8)"/>
+  <path d="M 340 342 L 340 358" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#ar8)"/>
+  <path d="M 340 436 L 340 452" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#ar8)"/>
+
+  <!-- 右侧要点 -->
+  <g transform="translate(680,76)">
+    <rect x="0" y="0" width="230" height="438" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="14" y="28" class="lname" style="font-size:12.5px">何时直接写 SQL？</text>
+    <text x="14" y="54" class="ldesc">ORM 适合 CRUD 和对象图导航；</text>
+    <text x="14" y="72" class="ldesc">复杂分析查询（多表窗口函数）</text>
+    <text x="14" y="90" class="ldesc">直接写 SQL 反而更清晰。</text>
+    <text x="14" y="122" class="lname" style="font-size:12.5px">N+1 问题（第 12 章实测）</text>
+    <text x="14" y="148" class="ldesc">查 100 个订单再逐个访问</text>
+    <text x="14" y="166" class="ldesc">order.items →</text>
+    <text x="14" y="184" class="ldesc">1 + 100 = 101 条 SQL</text>
+    <text x="14" y="212" class="ldesc" fill="#15803d" style="font-weight:600">joinedload → 1 条带 JOIN</text>
+    <text x="14" y="230" class="ldesc" fill="#15803d" style="font-weight:600">selectinload → 2 条带 IN</text>
+    <text x="14" y="262" class="lname" style="font-size:12.5px">三个职业习惯</text>
+    <text x="14" y="288" class="ldesc">· 所有 SQL 一律参数化</text>
+    <text x="14" y="306" class="ldesc">· 生产环境打开 SQL 日志，</text>
+    <text x="14" y="324" class="ldesc">　 看看 ORM 到底发了什么</text>
+    <text x="14" y="342" class="ldesc">· 慢的根因 90% 在 N+1</text>
+    <text x="14" y="360" class="ldesc">　 和缺索引，不在 ORM 本身</text>
+    <text x="14" y="404" class="ldesc" fill="#b91c1c">反面教训：</text>
+    <text x="14" y="422" class="ldesc" fill="#b91c1c">"ORM 会自动优化"是错觉，</text>
+    <text x="14" y="438" class="ldesc" fill="#b91c1c">它只忠实执行你让它做的事</text>
+  </g>
+</svg>
